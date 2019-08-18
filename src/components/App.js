@@ -58,8 +58,8 @@ class App extends React.Component {
             
         </div>
             
-            <Route path="/" exact render={() => <SearchBar colors={this.state.colors} />} />
-            <Route path="/detail"render={() => <CountryDetail colors={this.state.colors} />}  />
+            <Route path={process.env.PUBLIC_URL + '/'} exact render={() => <SearchBar colors={this.state.colors} />} />
+            <Route path={process.env.PUBLIC_URL + '/detail'} render={() => <CountryDetail colors={this.state.colors} />}  />
         </Router>
     )}
 }

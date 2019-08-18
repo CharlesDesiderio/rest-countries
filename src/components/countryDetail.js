@@ -3,68 +3,69 @@ import Axios from 'axios';
 import { Link } from 'react-router-dom';
 
 class CountryDetail extends React.Component {
-
     state = {
-        neighbors: []
-    }
-    
-    updateData = async () => {
-        let borders = await Axios.get('https://restcountries.eu/rest/v2/alpha/' + this.props.location.state.alpha3Code);
-        let results1 = borders.data.borders;
-        let results = '';
-
-        results = results1.map(async (x) => {
-            let fetch = 'https://restcountries.eu/rest/v2/alpha/' + x;
-            return Axios.get(fetch);
-        })
-        let alphaThree = [];
-
-        Promise.all(results).then((completed) => {
-            alphaThree = completed;
-            this.setState({neighbors: alphaThree});
-        })
+        details: '',
+        neighbors: [],
+        currencies: [],
+        languages: []
     }
 
     componentDidMount() {
-        this.updateData();
-   }
-   
-   componentDidUpdate() {
-       this.updateData();
-   }
+        this.fetchData();
+    }
 
-   render() {
- 
-    return (
-        <div>
-            <img src={this.props.location.state.flag} />
-            <h1>{this.props.location.state.name}</h1>
-            <p>{this.props.location.state.nativename}</p>
-            <p>{this.props.location.state.population}</p>
-            <p>{this.props.location.state.region}</p>
-            <p>{this.props.location.state.subregion}</p>
-            <p>{this.props.location.state.capital}</p>
-            <p>TLD: {this.props.location.state.topLevelDomain}</p>
-            {this.props.location.state.currencies.map(x => <p>{x.name}</p>)}
-            {this.props.location.state.languages.map(x => <p>{x.name}</p>)}
 
-            <p></p>
-            <ul>
-                    {this.state.neighbors.map(x => <li><Link to={{ pathname: '/detail/' + x.data.alpha3Code, state: { name: x.data.name, flag: x.data.flag, nativename: x.data.nativename, population: x.data.population, region: x.data.region, subregion: x.data.subregion, capital: x.data.capital, topleveldomain: x.data.topLevelDomain, currencies: x.data.currencies, languages: x.data.languages, alpha3Code: x.data.alpha3Code }}}>{x.data.name}</Link></li>)}
-            </ul>
-        </div>
-    )
+
+    fetchData = async () => {
+        let alpha3Code = window.location.pathname.slice(-3);
+        let details = await Axios.get('https://restcountries.eu/rest/v2/alpha/' + alpha3Code);
+        this.setState({details: details.data, neighbors: details.data.borders, currencies: details.data.currencies, languages: details.data.languages})
+    }
+    
+    fetchName = async (props) => {
+        return await Axios.get(props);
+    }
+
+    componentDidUpdate() {
+        setTimeout(() => {
+            this.fetchData();
+        }, 100);
+    }
+
+    render() {
+        return (
+            <div style={{backgroundColor: `${this.props.colors.color1}`, color: `${this.props.colors.color2}`}}>
+
+                {this.state.borderNames}
+                <div className="homeButton"><Link to={'/'}><button style={{backgroundColor: `${this.props.colors.color1}`, color: `${this.props.colors.color2}`}}><i className="fas fa-arrow-left"></i>Back</button></Link></div>
+                <div className="detailFlex">
+                    <img className="detailFlag" src={this.state.details.flag} />
+                    <div>
+                        <h1 className="mobileTitle">{this.state.details.name}</h1>
+                        <div className="infoGrid">
+                            <div>
+                                <p><strong>Native Name:</strong> {this.state.details.nativeName}</p>
+                                <p><strong>Population:</strong> {this.state.details.population}</p>
+                                <p><strong>Region:</strong> {this.state.details.region}</p>
+                                <p><strong>Sub Region:</strong> {this.state.details.subregion}</p>
+                                <p><strong>Capital:</strong> {this.state.details.capital}</p>
+                            </div>
+                            <div>
+                                <p><strong>Top Level Domain:</strong> {this.state.details.topLevelDomain}</p>
+
+                                <ul><strong>Currencies:</strong> <ul>{this.state.currencies.map(x => <li>{x.name}</li>)}</ul></ul>
+                                <ul><strong>Languages:</strong> <ul>{this.state.languages.map(x => <li>{x.name}</li>)}</ul></ul>
+
+
+                            </div>
+                        </div>
+                                <ul className="neighborList">
+                                    <p><strong>Border Countries: </strong></p>{this.state.neighbors.map(x => <li style={{backgroundColor: `${this.props.colors.color3}`}}><Link style={{backgroundColor: `${this.props.colors.color3}`, color: `${this.props.colors.color2}`}} to={{ pathname: '/detail/' + x, state: { alpha3Code: x }}}>{x}</Link></li>)}
+                                </ul>
+                    </div>
+                </div>
+        </div>)
     }
 }
 
 export default CountryDetail;
-
-
-/*
-
-ARRAYS; map over!
-
-{this.props.location.state.currencies}
-{this.props.location.state.languages}
-
-*/
